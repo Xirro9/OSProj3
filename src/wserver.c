@@ -6,7 +6,8 @@
 #include "request.h"
 #include "io_helper.h"
 #include <pthread.h>
-#include <unistd.h>
+#include <bits/getopt_core.h>
+
 
 char default_root[] = ".";
 
