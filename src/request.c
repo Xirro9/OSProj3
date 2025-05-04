@@ -165,11 +165,25 @@ void* thread_request_serve_static(void* arg)
 {
     // TODO: write code to actualy respond to HTTP requests
     // Pull from global buffer of requests
-}
 
-//
-// Initial handling of the request
-//
+    //consume request from buffer (consumer logic)
+    while (1) {
+        pthread_mutex_lock(&lock);
+        while (buffer_count == 0) {
+            pthread_cond_wait(&buffer_not_empty, &lock);
+        }
+
+        request_t req = request_buffer[buffer_front];
+        buffer_front = (buffer_front + 1) % MAX_REQUESTS;
+        buffer_count--;
+
+        pthread_cond_signal(&buffer_not_full);
+        pthread_mutex_unlock(&lock);
+
+        request_serve_static(req.fd, req.filename, req.filesize);
+        close_or_die(req.fd);
+    }
+}
 void request_handle(int fd) {
     int is_static;
     struct stat sbuf;
@@ -207,7 +221,7 @@ void request_handle(int fd) {
 
         // TODO: directory traversal mitigation
         // TODO: write code to add HTTP requests in the buffer
-        
+
         pthread_mutex_lock(&lock);
         while (buffer_count == buffer_max_size) {
             pthread_cond_wait(&buffer_not_full, &lock);
