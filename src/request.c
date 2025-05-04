@@ -165,7 +165,7 @@ void* thread_request_serve_static(void* arg) {
     // TODO: write code to actually respond to HTTP requests
     // Pull from global buffer of requests
 
-    // Consume request from buffer (consumer logic)
+    //Consume request from buffer (consumer logic)
     while (1) {
         pthread_mutex_lock(&lock);
         while (buffer_count == 0) {
@@ -174,9 +174,36 @@ void* thread_request_serve_static(void* arg) {
 
         int target_index = buffer_front;
 
-        //Implement scheduling policy (FIFO only)
-        request_t req = request_buffer[buffer_front];
-        buffer_front = (buffer_front + 1) % MAX_REQUESTS;
+        //Implement scheduling policy 
+        if (scheduling_algo == 1) { // SFF
+            int smallest_index = buffer_front;
+            for (int i = 1; i < buffer_count; ++i) {
+                int current_index = (buffer_front + i) % MAX_REQUESTS;
+                if (request_buffer[current_index].filesize < request_buffer[smallest_index].filesize) {
+                    smallest_index = current_index;
+                }
+            }
+            target_index = smallest_index;
+        } // else FIFO by default
+
+        request_t req = request_buffer[target_index];
+
+        // Shift buffer contents to fill the gap left by the extracted request
+        for (int i = target_index; i != buffer_rear; i = (i + 1) % MAX_REQUESTS) {
+            int next_index = (i + 1) % MAX_REQUESTS;
+            request_buffer[i] = request_buffer[next_index];
+        }
+        buffer_rear = (buffer_rear - 1 + MAX_REQUESTS) % MAX_REQUESTS;
+        buffer_count--;
+
+        
+
+        // Shift buffer contents to fill the gap left by the extracted request
+        for (int i = smallest_index; i != buffer_rear; i = (i + 1) % MAX_REQUESTS) {
+            int next_index = (i + 1) % MAX_REQUESTS;
+            request_buffer[i] = request_buffer[next_index];
+        }
+        buffer_rear = (buffer_rear - 1 + MAX_REQUESTS) % MAX_REQUESTS;
         buffer_count--;
 
         pthread_cond_signal(&buffer_not_full);
