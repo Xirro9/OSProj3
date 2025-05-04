@@ -165,16 +165,15 @@ void* thread_request_serve_static(void* arg) {
     // TODO: write code to actually respond to HTTP requests
     // Pull from global buffer of requests
 
-    //Consume request from buffer (consumer logic)
+    // CHECKPOINT 4: Consume request from buffer (consumer logic)
     while (1) {
         pthread_mutex_lock(&lock);
         while (buffer_count == 0) {
             pthread_cond_wait(&buffer_not_empty, &lock);
         }
 
+        // CHECKPOINT 6: Implement scheduling policy (FIFO, SFF, and Random)
         int target_index = buffer_front;
-
-        //Implement scheduling policy 
         if (scheduling_algo == 1) { // SFF
             int smallest_index = buffer_front;
             for (int i = 1; i < buffer_count; ++i) {
@@ -184,7 +183,10 @@ void* thread_request_serve_static(void* arg) {
                 }
             }
             target_index = smallest_index;
-        } // else FIFO by default
+        } else if (scheduling_algo == 2) { // Random
+            int offset = rand() % buffer_count;
+            target_index = (buffer_front + offset) % MAX_REQUESTS;
+        }
 
         request_t req = request_buffer[target_index];
 
@@ -198,14 +200,7 @@ void* thread_request_serve_static(void* arg) {
 
         
 
-        // Shift buffer contents to fill the gap left by the extracted request
-        for (int i = smallest_index; i != buffer_rear; i = (i + 1) % MAX_REQUESTS) {
-            int next_index = (i + 1) % MAX_REQUESTS;
-            request_buffer[i] = request_buffer[next_index];
-        }
-        buffer_rear = (buffer_rear - 1 + MAX_REQUESTS) % MAX_REQUESTS;
-        buffer_count--;
-
+        
         pthread_cond_signal(&buffer_not_full);
         pthread_mutex_unlock(&lock);
 
