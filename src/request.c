@@ -217,9 +217,17 @@ void request_handle(int fd) {
 		request_error(fd, filename, "403", "Forbidden", "server could not read this file");
 		return;
 	}
-    
 
         // TODO: directory traversal mitigation
+        char resolved_path[PATH_MAX];
+        if (realpath(filename, resolved_path) == NULL) {
+            request_error(fd, filename, "403", "Forbidden", "server could not resolve file path");
+            return;
+        }
+        if (strstr(resolved_path, "/..") != NULL || strstr(resolved_path, "//") != NULL) {
+            request_error(fd, filename, "403", "Forbidden", "directory traversal attempt blocked");
+            return;
+        }
         // TODO: write code to add HTTP requests in the buffer
 
         pthread_mutex_lock(&lock);
