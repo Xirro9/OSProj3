@@ -1,0 +1,4 @@
+/home/mahin/Documents/Proj3/OSProj3/build/CMakeFiles/server.dir
+/home/mahin/Documents/Proj3/OSProj3/build/CMakeFiles/client.dir
+/home/mahin/Documents/Proj3/OSProj3/build/CMakeFiles/edit_cache.dir
+/home/mahin/Documents/Proj3/OSProj3/build/CMakeFiles/rebuild_cache.dir

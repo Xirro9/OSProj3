@@ -1,5 +1,5 @@
 /*
- * Attribution:
+ * Attribution: Worked with Bristie
  * This project was developed with help from online resources for educational purposes.
  * Major references include:
  * - MIT Rust Book Chapter 20 Web Server: 
@@ -171,7 +171,6 @@ void request_handle(int fd) {
            request_error(fd, filename, "403", "Forbidden", "illegal file path");
            return;
        }
-
        
        // Lock the mutex to access the request buffer
        pthread_mutex_lock(&lock);
