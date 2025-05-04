@@ -1,6 +1,12 @@
 #include "io_helper.h"
 #include "request.h"
+#include <stdlib.h>
+#include <pthread.h>
+#include <string.h>
+#include <sys/types.h>
 
+#define MAXBUF (8192)
+#define MAX_REQUESTS 1024
 
 // below default values are defined in 'request.h'
 int num_threads = DEFAULT_THREADS;
@@ -14,14 +20,6 @@ int scheduling_algo = DEFAULT_SCHED_ALGO;
 //	HINT: You will need synchronization primitives.
 //		pthread_mutuex_t lock_var is a viable option.
 //
-
-#include <stdlib.h>
-#include <pthread.h>
-#include <string.h>
-#include <sys/types.h>
-
-#define MAXBUF (8192)
-#define MAX_REQUESTS 1024
 
 typedef struct {
     int fd;
