@@ -161,18 +161,20 @@ void request_serve_static(int fd, char *filename, int filesize) {
 //
 // Fetches the requests from the buffer and handles them (thread logic)
 //
-void* thread_request_serve_static(void* arg)
-{
-    // TODO: write code to actualy respond to HTTP requests
+void* thread_request_serve_static(void* arg) {
+    // TODO: write code to actually respond to HTTP requests
     // Pull from global buffer of requests
 
-    //consume request from buffer (consumer logic)
+    // Consume request from buffer (consumer logic)
     while (1) {
         pthread_mutex_lock(&lock);
         while (buffer_count == 0) {
             pthread_cond_wait(&buffer_not_empty, &lock);
         }
 
+        int target_index = buffer_front;
+
+        //Implement scheduling policy (FIFO only)
         request_t req = request_buffer[buffer_front];
         buffer_front = (buffer_front + 1) % MAX_REQUESTS;
         buffer_count--;
@@ -180,10 +182,12 @@ void* thread_request_serve_static(void* arg)
         pthread_cond_signal(&buffer_not_full);
         pthread_mutex_unlock(&lock);
 
+        
         request_serve_static(req.fd, req.filename, req.filesize);
         close_or_die(req.fd);
     }
 }
+
 void request_handle(int fd) {
     int is_static;
     struct stat sbuf;
